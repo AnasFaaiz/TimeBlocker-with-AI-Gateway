@@ -1,15 +1,25 @@
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useState } from 'react';
+import { LoginProps} from '../../types/login';
 
-const Login = () => {
+
+const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleRegister = () => {
     navigate('/signup');
   };
-
-  const handleLogin = () => {
-    navigate('/homepage');
+  const handleLogin = async () => {
+    try {
+      // Your login logic here
+      onLoginSuccess();
+      // Navigate to homepage
+    } catch (error) {
+      console.error('Error logging in', error);
+    }
   };
 
   return (

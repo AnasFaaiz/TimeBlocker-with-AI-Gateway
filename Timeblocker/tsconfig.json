@@ -1,7 +1,24 @@
 {
-  "files": [],
+  "compilerOptions": {
+    "moduleResolution": "Node",
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
+    "types": ["vite/client"],
+    "composite": false
+  },
+  "include": ["src"],
   "references": [
-    { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ]
 }

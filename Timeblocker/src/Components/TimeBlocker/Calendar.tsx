@@ -165,11 +165,11 @@ const Calendar: React.FC = () => {
         eventOverlap={false}
         slotEventOverlap={false}
         businessHours={{
-          daysOfWeek: [1, 2, 3, 4, 5],
+          daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
           startTime: '07:00',
           endTime: '19:00',
         }}
-        weekends={false}
+        weekends={true}
       />
     </StyledCalendar>
   );

@@ -1,4 +1,5 @@
 import Calendar from "../TimeBlocker/Calendar";
+import ToDo from "../TimeBlocker/ToDo";
 
 const HomePage = () => {
     return (
@@ -8,6 +9,7 @@ const HomePage = () => {
             </nav>
             <section>
                 <Calendar />
+                <ToDo />
             </section>
         </main>
     );

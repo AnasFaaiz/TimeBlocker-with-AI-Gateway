@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { rescheduleEvents } from './Scheduling';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -12,7 +13,7 @@ import {
   EventContentArg 
 } from '@fullcalendar/core';
 
-interface CalendarEvent {
+export interface CalendarEvent {
   id: string;
   title: string;
   start: string;
@@ -32,6 +33,16 @@ const Calendar: React.FC = () => {
       day: 'numeric'
     })
   );
+
+  const handleAIScheduling = async () => {
+    try {
+      const rescheduledEvents = await rescheduleEvents(events);
+      setEvents(rescheduledEvents);
+    } catch (error) {
+      console.error('Error during AI scheduling:', error);
+      alert('Failed to reschedule events. Please try again.');
+    }
+  };
 
   const formatEventTime = (start: Date, end: Date): string => {
     return `${start.toLocaleTimeString('en-US', { 
@@ -135,6 +146,7 @@ const Calendar: React.FC = () => {
     <StyledCalendar>
       <div className="calendar-header">
         <span className="current-date">{currentDate}</span>
+        <button className="ai-button" onClick={handleAIScheduling}>AI Scheduling</button>
       </div>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -187,6 +199,7 @@ const StyledCalendar = styled.div`
   .calendar-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 0.5rem 1rem;
     margin-bottom: 0.5rem;
     border-bottom: 1px solid #333;
@@ -197,6 +210,25 @@ const StyledCalendar = styled.div`
     font-weight: 500;
     color: #fff;
   }
+
+  .ai-button {
+    background-color: #2563eb; 
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.4rem 0.8rem; 
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #1d4ed8; // Darker blue on hover
+    }
+
+    &:active {
+      background-color: #1e40af; // Even darker when clicked
+    }
+  }    
 
   .fc {
     color: #fff;
@@ -290,6 +322,18 @@ const StyledCalendar = styled.div`
       border-bottom: 1px dashed #333;
     }
 
+    &-timegrid-col, 
+    &-daygrid-day {
+      background-color: #1a1a1a !important;
+    }
+
+  .fc-timegrid-col.fc-day-sat,
+    .fc-timegrid-col.fc-day-sun,
+    td.fc-daygrid-day.fc-day-sat,
+    td.fc-daygrid-day.fc-day-sun {
+      background-color: #1a1a1a !important;
+    }
+      
     &-day-today {
       background-color: rgba(255, 255, 255, 0.05) !important;
     }

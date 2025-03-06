@@ -135,7 +135,8 @@ const TodoContainer = styled.div`
   padding: 1.5rem;
   border-radius: 8px;
   color: #fff;
-  min-width: 300px;
+  justify-self: center;
+  min-width: 90vw;
   max-width: 600px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 `;

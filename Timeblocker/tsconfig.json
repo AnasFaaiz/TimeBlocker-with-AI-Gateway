@@ -1,24 +1,28 @@
 {
   "compilerOptions": {
-    "moduleResolution": "Node",
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "bundler",
     "target": "ESNext",
     "module": "ESNext",
+    "strict": true,
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "typeRoots": [
       "./node_modules/@types",
-      "./src/types"
+      "./src/types",
+      "node_modules/vite",
     ],
-    "types": ["vite/client"],
+    "types": ["vite/client",  "react", "react-dom"],
     "composite": false
   },
   "include": ["src"],
-  "references": [
-    { "path": "./tsconfig.node.json" }
-  ]
+  "exclude": ["node_modules", "dist"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

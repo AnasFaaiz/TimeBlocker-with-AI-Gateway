@@ -9,5 +9,9 @@ export default defineConfig({
     strictPort: true,
     host: true,
     // open: true,
-  }
+  },
+  resolve: {
+    extensions: ['.js', '.ts', '.jsx', '.tsx', '.json'],
+  },
+
 })

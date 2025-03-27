@@ -1,8 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import styled from "styled-components";
-import Login from "./Components/Login_Page/Login";
-import HomePage from "./Components/HomePage/Homepage";
+import Login from "./Components/Login_Page/Login.tsx";
+import HomePage from "./Components/HomePage/HomePage.tsx";
+
 
 const StyledApp = styled.div`
   min-height: 100vh;

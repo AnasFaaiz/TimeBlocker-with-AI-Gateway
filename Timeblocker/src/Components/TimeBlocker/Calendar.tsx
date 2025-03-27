@@ -12,6 +12,8 @@ import {
   EventDropArg,
   EventContentArg 
 } from '@fullcalendar/core';
+import { SchedulingPreferences } from './Scheduling';
+import AISchedulingOverlay from './Overlay';
 
 export interface CalendarEvent {
   id: string;
@@ -25,6 +27,8 @@ export interface CalendarEvent {
 
 const Calendar: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+  const [schedulingPreferences, setSchedulingPreferences] = useState<Partial<SchedulingPreferences>>({});
   const [currentDate, setCurrentDate] = useState<string>(
     new Date().toLocaleDateString('en-US', {
       weekday: 'long',
@@ -33,16 +37,30 @@ const Calendar: React.FC = () => {
       day: 'numeric'
     })
   );
-
-  const handleAIScheduling = async () => {
+  const handleform = () => {
+    setIsPreferencesOpen(true);
+  };
+  
+  const handlePreferencesSubmit = async (preferences: Partial<SchedulingPreferences>) => {
+    setSchedulingPreferences(preferences);
     try {
-      const rescheduledEvents = await rescheduleEvents(events);
+      const rescheduledEvents = await rescheduleEvents(events, preferences);
       setEvents(rescheduledEvents);
     } catch (error) {
       console.error('Error during AI scheduling:', error);
       alert('Failed to reschedule events. Please try again.');
     }
   };
+
+  // const handleAIScheduling = async () => {
+  //   try {
+  //     const rescheduledEvents = await rescheduleEvents(events);
+  //     setEvents(rescheduledEvents);
+  //   } catch (error) {
+  //     console.error('Error during AI scheduling:', error);
+  //     alert('Failed to reschedule events. Please try again.');
+  //   }
+  // };
 
   const formatEventTime = (start: Date, end: Date): string => {
     return `${start.toLocaleTimeString('en-US', { 
@@ -146,7 +164,7 @@ const Calendar: React.FC = () => {
     <StyledCalendar>
       <div className="calendar-header">
         <span className="current-date">{currentDate}</span>
-        <button className="ai-button" onClick={handleAIScheduling}>AI Scheduling</button>
+        <button className="ai-button" onClick={handleform}>AI Scheduling</button>
       </div>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -168,8 +186,8 @@ const Calendar: React.FC = () => {
         datesSet={handleDatesSet}
         eventContent={renderEventContent}
         height={600}
-        slotMinTime="07:00:00"
-        slotMaxTime="19:00:00"
+        slotMinTime="00:00:00"
+        slotMaxTime="24:00:00"
         slotDuration="00:30:00"
         snapDuration="00:15:00"
         allDaySlot={false}
@@ -178,10 +196,16 @@ const Calendar: React.FC = () => {
         slotEventOverlap={false}
         businessHours={{
           daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
-          startTime: '07:00',
-          endTime: '19:00',
+          startTime: '00:00',
+          endTime: '24:00',
         }}
         weekends={true}
+      />
+      <AISchedulingOverlay
+        isOpen={isPreferencesOpen}
+        onClose={() => setIsPreferencesOpen(false)}
+        onSubmit={handlePreferencesSubmit}
+        events={events}
       />
     </StyledCalendar>
   );

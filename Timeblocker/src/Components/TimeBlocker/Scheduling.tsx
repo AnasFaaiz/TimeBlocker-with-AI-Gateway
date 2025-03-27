@@ -5,7 +5,38 @@ interface TimeSlot {
   end: Date;
 }
 
-export const rescheduleEvents = async (events: CalendarEvent[]): Promise<CalendarEvent[]> => {
+export interface SchedulingPreferences {
+  businessHours: {
+    startTime: number;  // 0-23
+    endTime: number;    // 0-23
+  };
+  slotDuration: number;        // in minutes
+  maxDaysToLookAhead: number; // number of days to look ahead for scheduling
+  preferredDays?: number[];    // 0-6, where 0 is Sunday
+  breakBetweenEvents?: number; // minutes between events
+  mode: 'day' | 'week';        // scheduling mode
+}
+
+const DEFAULT_PREFERENCES: SchedulingPreferences = {
+  businessHours: {
+    startTime: 1,
+    endTime: 23,
+  },
+  slotDuration: 30,
+  maxDaysToLookAhead: 5,
+  breakBetweenEvents: 2,
+  mode: 'day'
+};
+
+export const rescheduleEvents = async (
+  events: CalendarEvent[],
+  preferences: Partial<SchedulingPreferences> = {}
+): Promise<CalendarEvent[]> => {
+  const schedulingPrefs: SchedulingPreferences = {
+    ...DEFAULT_PREFERENCES,
+    ...preferences
+  };
+
   // Sort events by duration (longest first)
   const sortedEvents = [...events].sort((a, b) => {
     const durationA = new Date(a.end).getTime() - new Date(a.start).getTime();
@@ -13,23 +44,22 @@ export const rescheduleEvents = async (events: CalendarEvent[]): Promise<Calenda
     return durationB - durationA;
   });
 
-  const businessHours = {
-    startTime: 7, 
-    endTime: 19, 
-  };
-
-
   const getAvailableSlots = (date: Date): TimeSlot[] => {
     const slots: TimeSlot[] = [];
-    const startHour = businessHours.startTime;
-    const endHour = businessHours.endTime;
+    const { startTime, endTime } = schedulingPrefs.businessHours;
+
+    // Skip if day is not in preferred days
+    if (schedulingPrefs.preferredDays && 
+        !schedulingPrefs.preferredDays.includes(date.getDay())) {
+      return slots;
+    }
 
     const slotDate = new Date(date);
-    slotDate.setHours(startHour, 0, 0, 0);
+    slotDate.setHours(startTime, 0, 0, 0);
 
-    while (slotDate.getHours() < endHour) {
+    while (slotDate.getHours() < endTime) {
       const start = new Date(slotDate);
-      slotDate.setMinutes(slotDate.getMinutes() + 30); // 30-minute slots
+      slotDate.setMinutes(slotDate.getMinutes() + schedulingPrefs.slotDuration);
       const end = new Date(slotDate);
       slots.push({ start, end });
     }
@@ -37,7 +67,6 @@ export const rescheduleEvents = async (events: CalendarEvent[]): Promise<Calenda
     return slots;
   };
 
-  // Check if slot is available
   const isSlotAvailable = (
     slot: TimeSlot,
     existingEvents: CalendarEvent[],
@@ -45,12 +74,17 @@ export const rescheduleEvents = async (events: CalendarEvent[]): Promise<Calenda
   ): boolean => {
     const slotEnd = new Date(slot.start.getTime() + duration);
     
+    // Add break time to check
+    const breakTime = schedulingPrefs.breakBetweenEvents || 0;
+    const slotStartWithBreak = new Date(slot.start.getTime() - breakTime * 60000);
+    const slotEndWithBreak = new Date(slotEnd.getTime() + breakTime * 60000);
+
     return !existingEvents.some(event => {
       const eventStart = new Date(event.start);
       const eventEnd = new Date(event.end);
       return (
-        (slot.start >= eventStart && slot.start < eventEnd) ||
-        (slotEnd > eventStart && slotEnd <= eventEnd)
+        (slotStartWithBreak >= eventStart && slotStartWithBreak < eventEnd) ||
+        (slotEndWithBreak > eventStart && slotEndWithBreak <= eventEnd)
       );
     });
   };
@@ -63,8 +97,8 @@ export const rescheduleEvents = async (events: CalendarEvent[]): Promise<Calenda
     const currentDate = new Date(event.start);
     let scheduled = false;
 
-    // Try to schedule within the same week
-    for (let i = 0; i < 5 && !scheduled; i++) {
+    // Try to schedule within the specified look-ahead period
+    for (let i = 0; i < schedulingPrefs.maxDaysToLookAhead && !scheduled; i++) {
       const availableSlots = getAvailableSlots(currentDate);
 
       for (const slot of availableSlots) {

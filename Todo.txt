@@ -1,0 +1,12 @@
+Features Needed to be added:
+
+1. Todo-List
+2. Time Blocking Calender
+3. LangDB integration using it's api
+4. Ai Scheduling using LangDB
+5. DashBoard for Analytics
+
+ReScheduling Methods:
+1. Reschedule tasks based on priority
+2. If tasks deadline is approaching then make it most priority
+3. If user has some free time then make the shortest duration task as priority

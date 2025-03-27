@@ -1,10 +1,13 @@
 {
+  "homepage": "https://AnasFaaiz.github.io/TimeBlocker-with-AI-Gateway/",
   "name": "timeblocker",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5175 --strictPort",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

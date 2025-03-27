@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import styled from "styled-components";
-import Login from "./Components/Login_Page/Login.tsx";
-import HomePage from "./Components/HomePage/HomePage.tsx";
+import Login from "./Components/Login_Page/Login";
+import HomePage from "./Components/HomePage/HomePage";
 
 
 const StyledApp = styled.div`

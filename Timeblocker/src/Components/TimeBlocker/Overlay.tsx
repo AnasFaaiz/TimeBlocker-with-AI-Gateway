@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { SchedulingPreferences } from './Scheduling';
 import { CalendarEvent } from './Calendar';
@@ -10,15 +10,22 @@ interface AISchedulingOverlayProps {
   events: CalendarEvent[];
 }
 
+interface TaskItemProps {
+  isSelected: boolean;
+}
+
 const AISchedulingOverlay: React.FC<AISchedulingOverlayProps> = ({
   isOpen,
   onClose,
   onSubmit,
   events
 }) => {
-    const [schedulingMode, setSchedulingMode] = React.useState<'day' | 'week'>('day');
-    const [breakDuration, setBreakDuration] = React.useState(15);
-    const [slotDuration, setSlotDuration] = React.useState(30);
+    const [schedulingMode, setSchedulingMode] = useState<'day' | 'week'>('day');
+    const [breakDuration, setBreakDuration] = useState(15);
+    const [slotDuration, setSlotDuration] = useState(30);
+    const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+    const [prompt, setPrompt] = useState('');
+
 
     const formatTasks = React.useMemo(() => {
       if (!isOpen) return [];
@@ -83,66 +90,96 @@ const AISchedulingOverlay: React.FC<AISchedulingOverlayProps> = ({
           <Title>AI Scheduling Preferences</Title>
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>
-        <Form onSubmit={handleSubmit}>
-        <ModeSelector>
-            <ModeButton 
-              type="button"
-              isActive={schedulingMode === 'day'}
-              onClick={() => setSchedulingMode('day')}
-            >
-              Day wise
-            </ModeButton>
-            <ModeButton 
-              type="button"
-              isActive={schedulingMode === 'week'}
-              onClick={() => setSchedulingMode('week')}
-            >
-              Week wise
-            </ModeButton>
-          </ModeSelector>
+        <ScrollableWrapper>
+          <Form onSubmit={handleSubmit}>
+          <ModeSelector>
+              <ModeButton 
+                type="button"
+                isActive={schedulingMode === 'day'}
+                onClick={() => setSchedulingMode('day')}
+              >
+                Day wise
+              </ModeButton>
+              <ModeButton 
+                type="button"
+                isActive={schedulingMode === 'week'}
+                onClick={() => setSchedulingMode('week')}
+              >
+                Week wise
+              </ModeButton>
+            </ModeSelector>
 
-          <TasksContainer>
-            <TasksHeader>
-              {schedulingMode === 'day' ? "Today's Tasks" : "This Week's Tasks"}
-            </TasksHeader>
-            <TasksList>
-              {formatTasks.map((task, index) => (
-                <TaskItem key={index}>
-                  <TaskTime>{task.time}</TaskTime>
-                  <TaskTitle>{task.title}</TaskTitle>
-                </TaskItem>
-              ))}
-            </TasksList>
-          </TasksContainer>
+            <TasksContainer>
+              <TasksHeader>
+                {schedulingMode === 'day' ? "Today's Tasks" : "This Week's Tasks"}
+              </TasksHeader>
+              <TasksList>
+                {formatTasks.map((task, index) => (
+                  <TaskItem key={index}
+                    onClick={() => {
+                      setSelectedTasks(prev => 
+                        prev.includes(index)
+                        ? prev.filter(i => i !== index)
+                        : [...prev, index]
+                      );
+                    }}
+                    isSelected={selectedTasks.includes(index)}
+                    >
+                    <TaskCheckbox>
+                      <input 
+                        type="checkbox" 
+                        checked={selectedTasks.includes(index)} 
+                        onChange={() => {}}
+                        onClick={e => e.stopPropagation()}
+                    />
+                    </TaskCheckbox>
+                    <TaskTime>{task.time}</TaskTime>
+                    <TaskTitle>{task.title}</TaskTitle>
+                  </TaskItem>
+                ))}
+              </TasksList>
+            </TasksContainer>
 
-            <DurationContainer>
+              <DurationContainer>
+                  <FormGroup>
+                      <Label>Break Duration (minutes)</Label>
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        value={breakDuration}
+                        onChange={(e) => setBreakDuration(Number(e.target.value))}
+                        placeholder="15" 
+                      />
+                  </FormGroup>
+                  <FormGroup>
+                      <Label>Slot Duration (minutes)</Label>
+                      <Input 
+                        type="number" 
+                        min="15" 
+                        step="15" 
+                        value={slotDuration}
+                        onChange={(e) => setSlotDuration(Number(e.target.value))}
+                        placeholder="30" 
+                      />
+                  </FormGroup>
+              </DurationContainer>
+            <TasksContainer>
+                {/* Here I wanna add block for input */}
                 <FormGroup>
-                    <Label>Break Duration (minutes)</Label>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      value={breakDuration}
-                      onChange={(e) => setBreakDuration(Number(e.target.value))}
-                      placeholder="15" 
-                    />
+                  <StyledTextArea 
+                  placeholder="Enter Prompt"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  />
                 </FormGroup>
-                <FormGroup>
-                    <Label>Slot Duration (minutes)</Label>
-                    <Input 
-                      type="number" 
-                      min="15" 
-                      step="15" 
-                      value={slotDuration}
-                      onChange={(e) => setSlotDuration(Number(e.target.value))}
-                      placeholder="30" 
-                    />
-                </FormGroup>
-            </DurationContainer>
-          <ButtonGroup>
-            <CancelButton type="button" onClick={onClose}>Cancel</CancelButton>
-            <SubmitButton type="submit">Apply Scheduling</SubmitButton>
-          </ButtonGroup>
-        </Form>
+
+            </TasksContainer>
+            <ButtonGroup>
+              <CancelButton type="button" onClick={onClose}>Cancel</CancelButton>
+              <SubmitButton type="submit">Apply Scheduling</SubmitButton>
+            </ButtonGroup>
+          </Form>
+        </ScrollableWrapper>
       </OverlayContent>
     </OverlayContainer>
   );
@@ -157,6 +194,57 @@ const OverlayContainer = styled.div`
   z-index: 1000;
 `;
 
+const ScrollableWrapper = styled.div`
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #333;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 3px;
+  }
+`;
+
+
+const StyledTextArea = styled.textarea`
+  background: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 0.75rem;
+  color: #fff;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  width: 95%;
+  
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+  }
+
+  &::placeholder {
+    color: #666;
+  }
+`;
+
+
+const TaskCheckbox = styled.div`
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+`;
+
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -168,18 +256,22 @@ const OverlayContent = styled.div`
   position: relative;
   background: #1a1a1a;
   border-radius: 8px;
-  padding: 1.5rem;
   width: 90%;
   max-width: 500px;
+  max-height: 90vh;
   z-index: 1001;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; // Add this to contain the scrollable content
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid #333;
 `;
 
 const Title = styled.h2`
@@ -333,16 +425,18 @@ const TasksList = styled.div`
   }
 `;
 
-const TaskItem = styled.div`
+const TaskItem = styled.div<{ isSelected?: boolean }>`
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 0.5rem;
-  background: #333;
+  background: ${props => props.isSelected ? '#2563eb33' : '#333'};
   border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
 
   &:hover {
-    background: #404040;
+    background: ${props => props.isSelected ? '#2563eb44' : '#404040'};
   }
 `;
 

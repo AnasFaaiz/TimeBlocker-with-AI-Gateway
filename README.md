@@ -87,7 +87,7 @@
 2. Install the required dependencies for both frontend and backend.
 3. Start the Spring Boot backend server.
 4. Launch the ReactJS frontend.
-5. Access the app at **http://localhost:3000** for the frontend and **http://localhost:8080** for the backend.
+5. Access the app at **http://localhost:5175** for the frontend and **http://localhost:3036** for the backend.
 
 ---
 

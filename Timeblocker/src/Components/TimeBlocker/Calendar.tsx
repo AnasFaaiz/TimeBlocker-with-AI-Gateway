@@ -12,23 +12,15 @@ import {
   EventDropArg,
   EventContentArg 
 } from '@fullcalendar/core';
-import { SchedulingPreferences } from './Scheduling';
+import { CalendarEvent, EventExtendedProps, SchedulingPreferences } from './types';
 import AISchedulingOverlay from './Overlay';
-
-export interface CalendarEvent {
-  id: string;
-  title: string;
-  start: string;
-  end: string;
-  extendedProps?: {
-    time?: string;
-  };
-}
+import ChatOverlay from './chatOverlay';
 
 const Calendar: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
   const [schedulingPreferences, setSchedulingPreferences] = useState<Partial<SchedulingPreferences>>({});
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState<string>(
     new Date().toLocaleDateString('en-US', {
       weekday: 'long',
@@ -164,7 +156,14 @@ const Calendar: React.FC = () => {
     <StyledCalendar>
       <div className="calendar-header">
         <span className="current-date">{currentDate}</span>
-        <button className="ai-button" onClick={handleform}>AI Scheduling</button>
+        <div className="header-buttons">
+          <button className="suggestion-button" onClick={() => setIsChatOpen(true)}>
+            Get Suggestions
+          </button>
+          <button className="ai-button" onClick={handleform}>
+            AI Scheduling
+          </button>
+        </div>
       </div>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -201,6 +200,11 @@ const Calendar: React.FC = () => {
         }}
         weekends={true}
       />
+      <ChatOverlay
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        events={events}
+      />
       <AISchedulingOverlay
         isOpen={isPreferencesOpen}
         onClose={() => setIsPreferencesOpen(false)}
@@ -233,6 +237,29 @@ const StyledCalendar = styled.div`
     font-size: 1.1rem;
     font-weight: 500;
     color: #fff;
+  }
+    .header-buttons {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .suggestion-button {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #059669;
+    }
+
+    &:active {
+      background-color: #047857;
+    }
   }
 
   .ai-button {

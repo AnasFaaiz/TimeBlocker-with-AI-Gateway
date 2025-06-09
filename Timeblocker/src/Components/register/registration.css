@@ -1,0 +1,222 @@
+.registration-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  min-width: 93vw;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1b69 50%, #1a1a1a 100%);
+  padding: 20px;
+  width: 100%;
+}
+
+.registration-card {
+  background: #000000;
+  border: 2px solid #6a4c93;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(106, 76, 147, 0.3);
+  padding: 50px;
+  width: 100%;
+  max-width: 1000px; /* Increased from 800px */
+  margin: 0 auto;
+}
+
+.registration-card h2 {
+  text-align: center;
+  margin-bottom: 8px;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.registration-subtitle {
+  text-align: center;
+  color: #b19cd9;
+  margin-bottom: 40px;
+  font-size: 18px;
+}
+
+.registration-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px; /* Increased gap */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.form-group input {
+  padding: 16px 18px; /* Increased padding */
+  border: 2px solid #333333;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group input::placeholder {
+  color: #888888;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #6a4c93;
+  background-color: #222222;
+  box-shadow: 0 0 0 3px rgba(106, 76, 147, 0.2);
+}
+
+.form-group input.error {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.registration-button {
+  background: linear-gradient(135deg, #6a4c93 0%, #8e44ad 50%, #6a4c93 100%);
+  color: white;
+  border: none;
+  padding: 18px 28px; /* Increased padding */
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 16px;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.registration-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #8e44ad 0%, #6a4c93 50%, #8e44ad 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(106, 76, 147, 0.4);
+}
+
+.registration-button:disabled {
+  background: #333333;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 30px;
+  color: #b19cd9;
+  font-size: 16px;
+}
+
+.login-link a {
+  color: #6a4c93;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.login-link a:hover {
+  color: #8e44ad;
+  text-decoration: underline;
+}
+
+/* Responsive breakpoints */
+@media (min-width: 1400px) {
+  .registration-card {
+    max-width: 1200px;
+    padding: 60px;
+  }
+  
+  .form-row {
+    gap: 28px;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .registration-card {
+    max-width: 1000px;
+    padding: 55px;
+  }
+  
+  .form-row {
+    gap: 26px;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .registration-card {
+    max-width: 850px;
+    padding: 50px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .registration-card {
+    max-width: 700px;
+    padding: 45px;
+  }
+}
+
+@media (max-width: 767px) {
+  .registration-container {
+    padding: 15px;
+  }
+  
+  .registration-card {
+    padding: 35px 25px;
+    max-width: 100%;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .registration-card h2 {
+    font-size: 26px;
+  }
+  
+  .registration-subtitle {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .registration-card {
+    padding: 25px 20px;
+  }
+  
+  .registration-card h2 {
+    font-size: 24px;
+  }
+  
+  .form-group input {
+    padding: 14px 16px;
+  }
+  
+  .registration-button {
+    padding: 16px 24px;
+    font-size: 16px;
+  }
+}   

@@ -2,7 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import styled from "styled-components";
 import Login from "./Components/Login_Page/Login";
-import HomePage from "./Components/HomePage/Homepage";
+import Registration from "./Components/register/registration";
+import HomePage from "./Components/HomePage/HomePage";
 
 const StyledApp = styled.div`
   min-height: 100vh;
@@ -17,6 +18,7 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Registration />} />
           <Route path="/homepage" element={<HomePage />} />
         </Routes>
       </Router>

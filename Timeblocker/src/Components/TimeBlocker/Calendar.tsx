@@ -55,29 +55,268 @@ const Calendar: React.FC = () => {
     })}`;
   };
 
-  const handleDateSelect = (selectInfo: DateSelectArg) => {
-    const title = prompt('Enter event title:');
-    if (title) {
-      const startTime = new Date(selectInfo.startStr);
-      const endTime = new Date(selectInfo.endStr);
-      const timeString = formatEventTime(startTime, endTime);
-  
-      setEvents([...events, {
-        id: String(Date.now()),
-        title,
-        start: selectInfo.startStr,
-        end: selectInfo.endStr,
-        extendedProps: {
-          time: timeString
-        }
-      }]);
+  const getPriorityColor = (priority: string): string => {
+    switch (priority) {
+      case 'high':
+        return '#ff4444';
+      case 'medium':
+        return '#ffa500';
+      case 'low':
+        return '#4285f4';
+      default:
+        return '#4285f4';
     }
-    selectInfo.view.calendar.unselect();
+  };
+
+  const handleDateSelect = (selectInfo: DateSelectArg) => {
+    // Create a modal-like form for event details
+    const createEventForm = () => {
+      return new Promise<{title: string, description: string, priority: string, category: string} | null>((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+          backdrop-filter: blur(5px);
+        `;
+
+        const form = document.createElement('div');
+        form.style.cssText = `
+          background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+          padding: 2rem;
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: white;
+          min-width: 400px;
+          max-width: 500px;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        `;
+
+        const startTime = new Date(selectInfo.startStr);
+        const endTime = new Date(selectInfo.endStr);
+        const timeString = formatEventTime(startTime, endTime);
+
+        form.innerHTML = `
+          <h3 style="margin: 0 0 1.5rem 0; color: #fff; font-size: 1.4rem; text-align: center;">Add New Event</h3>
+          <p style="margin: 0 0 1rem 0; color: rgba(255, 255, 255, 0.7); text-align: center; font-size: 0.9rem;">
+            ${timeString}
+          </p>
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: rgba(255, 255, 255, 0.9); font-weight: 600;">Event Title *</label>
+            <input type="text" id="eventTitle" placeholder="Enter event title" style="
+              width: 100%;
+              padding: 0.75rem;
+              border: 1px solid rgba(255, 255, 255, 0.2);
+              border-radius: 8px;
+              background: rgba(42, 42, 42, 0.8);
+              color: white;
+              font-size: 1rem;
+              box-sizing: border-box;
+            " />
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: rgba(255, 255, 255, 0.9); font-weight: 600;">Description</label>
+            <textarea id="eventDescription" placeholder="Enter event description (optional)" style="
+              width: 100%;
+              padding: 0.75rem;
+              border: 1px solid rgba(255, 255, 255, 0.2);
+              border-radius: 8px;
+              background: rgba(42, 42, 42, 0.8);
+              color: white;
+              font-size: 1rem;
+              min-height: 80px;
+              resize: vertical;
+              box-sizing: border-box;
+            "></textarea>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: rgba(255, 255, 255, 0.9); font-weight: 600;">Priority</label>
+            <select id="eventPriority" style="
+              width: 100%;
+              padding: 0.75rem;
+              border: 1px solid rgba(255, 255, 255, 0.2);
+              border-radius: 8px;
+              background: rgba(42, 42, 42, 0.8);
+              color: white;
+              font-size: 1rem;
+              box-sizing: border-box;
+            ">
+              <option value="low">Low Priority</option>
+              <option value="medium" selected>Medium Priority</option>
+              <option value="high">High Priority</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: rgba(255, 255, 255, 0.9); font-weight: 600;">Category</label>
+            <select id="eventCategory" style="
+              width: 100%;
+              padding: 0.75rem;
+              border: 1px solid rgba(255, 255, 255, 0.2);
+              border-radius: 8px;
+              background: rgba(42, 42, 42, 0.8);
+              color: white;
+              font-size: 1rem;
+              box-sizing: border-box;
+            ">
+              <option value="work">Work</option>
+              <option value="personal">Personal</option>
+              <option value="meeting">Meeting</option>
+              <option value="appointment">Appointment</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button id="cancelBtn" style="
+              padding: 0.75rem 1.5rem;
+              border: 1px solid rgba(255, 255, 255, 0.3);
+              border-radius: 8px;
+              background: transparent;
+              color: white;
+              cursor: pointer;
+              font-size: 1rem;
+              transition: all 0.3s ease;
+            " onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">Cancel</button>
+            <button id="saveBtn" style="
+              padding: 0.75rem 1.5rem;
+              border: none;
+              border-radius: 8px;
+              background: linear-gradient(135deg, #4285f4 0%, #1976d2 100%);
+              color: white;
+              cursor: pointer;
+              font-size: 1rem;
+              font-weight: 600;
+              transition: all 0.3s ease;
+            " onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">Save Event</button>
+          </div>
+        `;
+
+        overlay.appendChild(form);
+        document.body.appendChild(overlay);
+
+        // Focus on title input
+        const titleInput = form.querySelector('#eventTitle') as HTMLInputElement;
+        if (titleInput) {
+          titleInput.focus();
+        }
+
+        // Handle form submission
+        const saveBtn = form.querySelector('#saveBtn') as HTMLButtonElement;
+        const cancelBtn = form.querySelector('#cancelBtn') as HTMLButtonElement;
+
+        const cleanup = () => {
+          try {
+            if (document.body.contains(overlay)) {
+              document.body.removeChild(overlay);
+            }
+          } catch (error) {
+            console.error('Error cleaning up modal:', error);
+          }
+        };
+
+        const handleSave = () => {
+          const title = (form.querySelector('#eventTitle') as HTMLInputElement)?.value?.trim() || '';
+          const description = (form.querySelector('#eventDescription') as HTMLTextAreaElement)?.value?.trim() || '';
+          const priority = (form.querySelector('#eventPriority') as HTMLSelectElement)?.value || 'medium';
+          const category = (form.querySelector('#eventCategory') as HTMLSelectElement)?.value || 'other';
+
+          if (!title) {
+            alert('Please enter an event title');
+            return;
+          }
+
+          cleanup();
+          resolve({ title, description, priority, category });
+        };
+
+        const handleCancel = () => {
+          cleanup();
+          resolve(null);
+        };
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+          if (e.key === 'Escape') {
+            handleCancel();
+          } else if (e.key === 'Enter' && e.target === titleInput) {
+            handleSave();
+          }
+        };
+
+        // Add event listeners
+        if (saveBtn) saveBtn.addEventListener('click', handleSave);
+        if (cancelBtn) cancelBtn.addEventListener('click', handleCancel);
+        if (titleInput) titleInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') handleSave();
+        });
+        overlay.addEventListener('keydown', handleKeyDown);
+
+        // Click outside to close
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) {
+            handleCancel();
+          }
+        });
+      });
+    };
+
+    // Use the form and create event
+    createEventForm().then((eventData) => {
+      if (eventData) {
+        const startTime = new Date(selectInfo.startStr);
+        const endTime = new Date(selectInfo.endStr);
+        const timeString = formatEventTime(startTime, endTime);
+
+        const newEvent: CalendarEvent = {
+          id: String(Date.now() + Math.random()),
+          title: eventData.title,
+          start: selectInfo.startStr,
+          end: selectInfo.endStr,
+          backgroundColor: getPriorityColor(eventData.priority),
+          borderColor: getPriorityColor(eventData.priority),
+          extendedProps: {
+            time: timeString,
+            description: eventData.description,
+            priority: eventData.priority,
+            category: eventData.category,
+            priorityColor: getPriorityColor(eventData.priority)
+          }
+        };
+
+        setEvents(prevEvents => [...prevEvents, newEvent]);
+      }
+      selectInfo.view.calendar.unselect();
+    }).catch((error) => {
+      console.error('Error creating event:', error);
+      selectInfo.view.calendar.unselect();
+    });
   };
 
   const handleEventClick = (clickInfo: EventClickArg) => {
-    if (window.confirm(`Delete event '${clickInfo.event.title}'?`)) {
-      setEvents(events.filter(event => event.id !== clickInfo.event.id));
+    const event = clickInfo.event;
+    const eventDetails = `
+Event: ${event.title}
+Time: ${event.extendedProps?.time || 'N/A'}
+Category: ${event.extendedProps?.category || 'N/A'}
+Priority: ${event.extendedProps?.priority || 'N/A'}
+Description: ${event.extendedProps?.description || 'No description'}
+
+Do you want to delete this event?`;
+
+    if (window.confirm(eventDetails)) {
+      setEvents(prevEvents => prevEvents.filter(e => e.id !== event.id));
     }
   };
 
@@ -106,10 +345,18 @@ const Calendar: React.FC = () => {
   const handleEventResize = (resizeInfo: EventResizeDoneArg) => {
     const updatedEvents = events.map(event => {
       if (event.id === resizeInfo.event.id) {
+        const startTime = new Date(resizeInfo.event.startStr);
+        const endTime = new Date(resizeInfo.event.endStr);
+        const timeString = formatEventTime(startTime, endTime);
+
         return {
           ...event,
           start: resizeInfo.event.startStr,
           end: resizeInfo.event.endStr,
+          extendedProps: {
+            ...event.extendedProps,
+            time: timeString
+          }
         };
       }
       return event;
@@ -118,12 +365,13 @@ const Calendar: React.FC = () => {
   };
 
   const handleDatesSet = (dateInfo: DatesSetArg) => {
-    setCurrentDate(dateInfo.start.toLocaleDateString('en-US', {
+    const newDate = dateInfo.start.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    }));
+    });
+    setCurrentDate(newDate);
   };
 
   const renderEventContent = (eventInfo: EventContentArg) => {
@@ -132,12 +380,21 @@ const Calendar: React.FC = () => {
     
     const displayTime = eventInfo.event.extendedProps?.time || 
       formatEventTime(new Date(eventInfo.event.startStr), new Date(eventInfo.event.endStr));
-  
+
+    const priority = eventInfo.event.extendedProps?.priority || 'medium';
+    const category = eventInfo.event.extendedProps?.category || 'other';
+
     return (
       <EventContentWrapper>
-        <EventTitle>{eventInfo.event.title}</EventTitle>
+        <EventTitle>
+          {eventInfo.event.title}
+          <PriorityIndicator priority={priority} />
+        </EventTitle>
         {isTimeGridView && (
-          <EventTime>{displayTime}</EventTime>
+          <>
+            <EventTime>{displayTime}</EventTime>
+            <EventCategory>{category}</EventCategory>
+          </>
         )}
       </EventContentWrapper>
     );
@@ -203,6 +460,13 @@ const Calendar: React.FC = () => {
             endTime: '24:00',
           }}
           weekends={true}
+          eventDidMount={(info) => {
+            // Apply priority-based styling
+            const priority = info.event.extendedProps?.priority || 'medium';
+            const color = getPriorityColor(priority);
+            info.el.style.backgroundColor = color;
+            info.el.style.borderColor = color;
+          }}
         />
       </CalendarWrapper>
 
@@ -469,33 +733,32 @@ const CalendarWrapper = styled.div`
     }
 
     &-event {
-      background: linear-gradient(135deg, #4285f4 0%, #1976d2 100%) !important;
       border: none !important;
       border-radius: 8px;
       padding: 6px 8px;
       margin: 2px 0;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(5px);
       border: 1px solid rgba(255, 255, 255, 0.2) !important;
 
       &:hover {
         transform: scale(1.02) translateY(-1px);
-        box-shadow: 0 4px 16px rgba(66, 133, 244, 0.4);
-        background: linear-gradient(135deg, #5a95f5 0%, #2986e3 100%) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        filter: brightness(1.1);
       }
 
       &.fc-event-dragging {
         opacity: 0.8;
         transform: scale(1.05);
-        box-shadow: 0 8px 24px rgba(66, 133, 244, 0.5);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
         z-index: 10;
       }
 
       &.fc-event-resizing {
         opacity: 0.7;
-        box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
       }
     }
 
@@ -617,6 +880,8 @@ const EventTitle = styled.div`
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   line-height: 1.2;
+  display: flex;
+  align-items: center;
 `;
 
 const EventTime = styled.div`
@@ -625,6 +890,32 @@ const EventTime = styled.div`
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+`;
+
+const PriorityIndicator = styled.span<{ priority: string }>`
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+  background: ${({ priority }) => {
+    switch (priority) {
+      case 'high': return '#ff4444';
+      case 'medium': return '#ffa500';
+      case 'low': return '#4285f4';
+      default: return '#4285f4';
+    }
+  }};
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+`;
+
+const EventCategory = styled.div`
+  font-size: 0.7rem;
+  opacity: 0.8;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: capitalize;
+  font-weight: 400;
 `;
 
 export default Calendar;

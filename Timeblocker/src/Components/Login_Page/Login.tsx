@@ -5,7 +5,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
 
   const handleRegister = () => {
-    navigate('/signup');
+    navigate('/register');
   };
 
   const handleLogin = () => {

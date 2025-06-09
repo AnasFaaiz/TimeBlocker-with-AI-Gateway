@@ -2,8 +2,7 @@ Features Needed to be added:
 
 1. Todo-List
 2. Time Blocking Calender
-3. LangDB integration using it's api
-4. Ai Scheduling using LangDB
+4. Ai Scheduling 
 5. DashBoard for Analytics
 
 ReScheduling Methods:

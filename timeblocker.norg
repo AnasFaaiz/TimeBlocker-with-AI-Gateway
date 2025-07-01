@@ -1,0 +1,51 @@
+# Project Details
+
+" TimeBlocker is a project to help manage time management with AI included for suggestion, scheduling as well.
+
+## ( ) Features:
+-- (x) Calendar Page
+--- (x) Daily view
+--- (x) monthly view
+--- (x) weekly view
+-- (-) Analytics Page
+--- (-) Overview
+--- (-) Performance
+--- (-) Time Tracking
+--- (-) Reports
+--- (-) Goals
+-- (x) Tasks
+--- (x) Progress
+--- (x) To-Do listin
+
+## Technology Stack:
+- Reactjs
+- Typescript
+- nodejs
+- Fastify
+- AI api
+
+### Work is done?:
+
+- ( ) Frontend 
+-- (x) design for calendar page
+-- (x) design for analytics page
+-- (x) design for tasks page
+-- (x) Drag & Drop in calendar 
+-- (x) Add new tasks
+-- (-) AI suggestions
+-- (=) AI Scheduling
+-- (-) track timing for analytics page
+-- (-) track progress
+
+- ( ) Backend
+-- (x) connect fastify to mongodb
+-- (-) Finish Login & Registration
+-- (-) store user & admin data in mongodb
+-- (-) routing, middleware, controllers
+
+- ( ) Others
+-- ( ) Find out for AI to work
+--- (_) OpenAI api?    Reason: no credits left!
+--- ( ) gemini api?
+--- ( ) own AI train (NLP)? 
+
